@@ -19,26 +19,6 @@ void Tree::insertValue(double value)
     return;
   }
 
-  // ≈сли у дерева один узел (корень)
-  if (root_->is_leaf()) 
-  {
-    if (value < root_->getLeafValue())
-    {
-      root_ = new Node(new Node(value), root_);
-      root_->setMiddleKey(root_->getLeafValue());
-    }
-    else 
-      if (value > root_->getLeafValue())
-      {
-        root_ = new Node(root_, new Node(value));
-        root_->setMiddleKey(value);
-      }
-
-    return;
-  }
-
-  
-  // ≈сли дичь
   double i;
   Node *node = insert(root_, value, &i);
 
@@ -56,103 +36,103 @@ Node* Tree::insert(Node *current_node, double value, double* low)
   Node *w;
 
   // ≈сли лист
-  if (current_node->is_leaf())
-  {
-    if (current_node->getLeafValue() != value)
-      if (current_node->getLeafValue() < value)
-      {
+  if (current_node->is_leaf())    
+    if (value > current_node->getLeafValue())
+    {
       *low = value;
       return new Node(value);
-      }
-      else {
-        Node *pnew = new Node(current_node->getLeafValue());
-        current_node->setLeafValue(value);
-        *low = current_node->getLeafValue();
-
-        return pnew;
-      }
-
-      return NULL;
-  }
-  
-    // ≈сли узел
-    if (value < current_node->getMiddleKey())
-    { 
-      child = 1;
-      w = current_node->getLeftChild();
     }
-    else if (!current_node->getRightChild() || value < current_node->getMiddleKey())
+    else if (value < current_node->getLeafValue())
     {
-      child = 2;
-      w = current_node->getMiddleChild();
+      *low = current_node->getLeafValue();
+      return new Node(current_node->setLeafValue(value));
+    }
+    else
+      return NULL;
+  
+  // ≈сли узел, выбираем ветку
+  if (value < current_node->getMiddleKey())
+  { 
+    child = 1;
+    w = current_node->getLeftChild();
+  }
+  else if (!current_node->hasRightChild())
+  {
+    child = 2;
+    w = current_node->getMiddleChild();
+  }
+  else {
+    child = 3;
+    w = current_node->getRightChild();
+  }
+
+  double lowback = 0;
+  Node *pback = insert(w, value, &lowback);
+
+  if (pback == NULL)
+    return NULL;
+
+  // current_node имеет двух сыновей
+  if (!current_node->hasRightChild())
+  {
+    if (child == 2)
+    {
+      current_node->setRightChild(pback);
+      current_node->setRightKey(lowback);
     }
     else {
-      child = 3;
-      w = current_node->getRightChild();
+      current_node->setRightChild(current_node->getMiddleChild());
+      current_node->setRightKey(current_node->getMiddleKey());
+      current_node->setMiddleChild(pback);
+      current_node->setMiddleKey(lowback);
+    }
+  }
+
+
+  // node имеет трех сыновей
+  else {
+    Node *pnew = new Node();
+
+    if (child == 3) // pback и 3 - й сын станов€тс€ сыновь€ми нового узла
+    {
+      pnew->setLeftChild(current_node->getRightChild());
+      pnew->setMiddleChild(pback);
+      pnew->setMiddleKey(lowback);
+
+      *low = current_node->getRightKey();
+      current_node->setRightChild(NULL);
+      current_node->setRightKey(0);
+    }
+    else {
+      pnew->setMiddleChild(current_node->getRightChild());
+      pnew->setMiddleKey(current_node->getRightKey());
+      current_node->setRightChild(NULL);
+      current_node->setRightKey(0);
     }
 
-    double lowback = 0;
-    Node *pback = insert(w, value, &lowback);
+    if (child == 2)
+    {
+      pnew->setLeftChild(pback);
+      *low = lowback;
+    }
 
-    if (pback != NULL)
-      // node имеет двух сыновей
-      if (current_node->getRightChild() == NULL) 
+    if (child == 1) 
+    {
+      pnew->setLeftChild(current_node->getMiddleChild());
+      *low = current_node->getMiddleKey();
 
+      current_node->setMiddleChild(pback);
+      current_node->setMiddleKey(lowback);
+    }
 
-        if (child == 2)
-        {
-          current_node->setRightChild(pback);
-          current_node->setRightKey(lowback);
-        }
-        else {
-          current_node->setRightChild(current_node->getMiddleChild());
-          current_node->setRightKey(current_node->getMiddleKey());
-          current_node->setMiddleChild(pback);
-          current_node->setMiddleKey(lowback);
-        }
+    return pnew;
+  }
 
+  return NULL;
+}
 
-
-      // node имеет трех сыновей
-      else {
-        Node *pnew = new Node();
-
-        if (child == 3) // pback и 3 - й сын станов€тс€ сыновь€ми нового узла
-        {
-          pnew->setLeftChild(current_node->getRightChild());
-          pnew->setMiddleChild(pback);
-          pnew->setMiddleKey(lowback);
-
-          *low = current_node->getRightKey();
-          current_node->setRightChild(NULL);
-          current_node->setRightKey(0);
-        }
-        else {
-          pnew->setMiddleChild(current_node->getRightChild());
-          pnew->setMiddleKey(current_node->getRightKey());
-          current_node->setRightChild(NULL);
-        }
-
-        if (child == 2)
-        {
-          pnew->setLeftChild(pback);
-          *low = lowback;
-        }
-
-        if (child == 1) 
-        {
-          pnew->setLeftChild(current_node->getMiddleChild());
-          *low = current_node->getMiddleKey();
-
-          current_node->setMiddleChild(pback);
-          current_node->setMiddleKey(lowback);
-        }
-
-        return pnew;
-     }
-
-
-     return NULL;
+void Tree::removeValue(double value)
+{
 }
 
 void Tree::print(Node *tree, int lv)
@@ -162,7 +142,7 @@ void Tree::print(Node *tree, int lv)
       return;
 
     if (tree->is_leaf())
-      printf("%.0f ", tree->getLeafValue());
+      printf("%d ", tree->getLeafValue());
     else {
       if (lv) 
         printf("\n");
@@ -170,7 +150,11 @@ void Tree::print(Node *tree, int lv)
       for (i = 0; i < lv; i++)
         printf("    ");
 
-      printf("[%.0f, %.0f]: ", tree->getMiddleKey(), tree->getRightKey());
+      if (!tree->hasRightChild())
+        printf("[%d, -]: ", tree->getMiddleKey());
+      else
+        printf("[%d, %d]: ", tree->getMiddleKey(), tree->getRightKey());
+        
     }
 
     print(tree->getLeftChild(), lv + 1);

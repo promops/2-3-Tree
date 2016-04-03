@@ -15,7 +15,7 @@ public:
   Tree();
 
   void insertValue(double);
-  Node searchNode(double);
+  void removeValue(double);
 
   void printTree();
 };
