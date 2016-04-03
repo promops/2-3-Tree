@@ -5,37 +5,48 @@
 class Node
 {
   private:
-    Node *left_child_ = NULL;
+    Node *left_child_   = NULL;
     Node *middle_child_ = NULL;
-    Node *right_child_ = NULL;
+    Node *right_child_  = NULL;
 
-    double middle_key_ = 0; // minimal value from middle node
-    double right_key_ = 0;  // minimal value from right node
+    int middle_key_ = LONG_MIN;  // minimal value from middle node
+    int right_key_  = LONG_MIN;  // minimal value from right node
 
-    double leaf_value_ = 0; 
+    int leaf_value_ = LONG_MIN;
 
   public:
     Node();
-    Node(double value);
+    Node(int value);
     Node(Node *left_child, Node *middle_child);
 
-    double getLeafValue() const;
-    double setLeafValue(double value); // Возвращает старое значение
+    //bool hasLeafValue() const;
+    int  getLeafValue() const;
+    int  setLeafValue(int value); // Возвращает старое значение
 
-    double getMiddleKey() const;
-    void   setMiddleKey(double value);
+    void removeMiddleKey();
+    int  getMiddleKey() const;
+    bool hasMiddleKey() const;
+    void setMiddleKey(int value);
+    
+    void removeRightKey();
+    int  getRightKey() const;
+    bool hasRightKey() const;
+    void setRightKey(int value);
 
-    double getRightKey() const;
-    void   setRightKey(double value);
-
+    bool  hasLeftChild() const;
     Node* getLeftChild() const;
     void  setLeftChild(Node* child);
+    void  removeLeftChild();
 
+    bool  hasMiddleChild() const;
     Node* getMiddleChild() const;
     void  setMiddleChild(Node* child);
+    void  removeMiddleChild();
 
+    bool  hasRightChild() const;
     Node* getRightChild() const;
     void  setRightChild(Node* child);
+    void  removeRightChild();
 
     bool is_node() const;
     bool is_leaf() const;
