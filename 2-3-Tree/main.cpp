@@ -18,8 +18,10 @@ int main()
   cout << "\n\n\n";
 
   tree->insertValue(4);
-  //tree->insertValue(5);
-  //tree->insertValue(6);
+  tree->insertValue(5);
+  tree->insertValue(6);
+  tree->insertValue(7);
+  tree->insertValue(8);
 
   tree->printTree();
 

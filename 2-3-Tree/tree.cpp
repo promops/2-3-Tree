@@ -23,10 +23,16 @@ void Tree::insertValue(double value)
   if (root_->is_leaf()) 
   {
     if (value < root_->getLeafValue())
+    {
       root_ = new Node(new Node(value), root_);
+      root_->setMiddleKey(root_->getLeafValue());
+    }
     else 
       if (value > root_->getLeafValue())
+      {
         root_ = new Node(root_, new Node(value));
+        root_->setMiddleKey(value);
+      }
 
     return;
   }
@@ -72,26 +78,21 @@ Node* Tree::insert(Node *current_node, double value, double* low)
     // ≈сли узел
     if (value < current_node->getMiddleKey())
     { 
-      cout << "child: 1\n";
       child = 1;
       w = current_node->getLeftChild();
     }
-    else if (!current_node->getRightChild() || value < current_node->getMiddleKey()) // х во втором поддереве
+    else if (!current_node->getRightChild() || value < current_node->getMiddleKey())
     {
-      cout << "child: 2\n";
       child = 2;
       w = current_node->getMiddleChild();
     }
-    else { // х в третьем поддереве 
-      cout << "child: 3\n";
+    else {
       child = 3;
       w = current_node->getRightChild();
     }
 
     double lowback = 0;
     Node *pback = insert(w, value, &lowback);
-
-
 
     if (pback != NULL)
       // node имеет двух сыновей
@@ -100,12 +101,10 @@ Node* Tree::insert(Node *current_node, double value, double* low)
 
         if (child == 2)
         {
-          cout << "== 2\n";
           current_node->setRightChild(pback);
           current_node->setRightKey(lowback);
         }
-        else { // child = 1 
-          cout << "== 1\n";
+        else {
           current_node->setRightChild(current_node->getMiddleChild());
           current_node->setRightKey(current_node->getMiddleKey());
           current_node->setMiddleChild(pback);
@@ -120,14 +119,13 @@ Node* Tree::insert(Node *current_node, double value, double* low)
 
         if (child == 3) // pback и 3 - й сын станов€тс€ сыновь€ми нового узла
         {
-          cout << "== 3\n";
-
           pnew->setLeftChild(current_node->getRightChild());
           pnew->setMiddleChild(pback);
           pnew->setMiddleKey(lowback);
 
           *low = current_node->getRightKey();
           current_node->setRightChild(NULL);
+          current_node->setRightKey(0);
         }
         else {
           pnew->setMiddleChild(current_node->getRightChild());
