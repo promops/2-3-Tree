@@ -15,6 +15,7 @@ class Node
     double leaf_value_ = 0; 
 
   public:
+    Node();
     Node(double value);
     Node(Node *left_child, Node *middle_child);
 

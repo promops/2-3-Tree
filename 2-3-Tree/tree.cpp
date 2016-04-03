@@ -12,13 +12,15 @@ Tree::Tree()
 
 void Tree::insertValue(double value)
 {
-  if (!root_) // Если дерево пустое
+  // Если дерево пустое
+  if (!root_)
   {
     root_ = new Node(value);
     return;
   }
 
-  if (root_->is_leaf()) // Если у дерева один узел (корень)
+  // Если у дерева один узел (корень)
+  if (root_->is_leaf()) 
   {
     if (value < root_->getLeafValue())
       root_ = new Node(new Node(value), root_);
@@ -29,96 +31,130 @@ void Tree::insertValue(double value)
     return;
   }
 
+  
   // Если дичь
-
-  Node *node = insert(root_, value);
+  double i;
+  Node *node = insert(root_, value, &i);
 
   //создание нового корня
-  if (node != NULL) 
+  if (node != NULL)
+  {
     root_ = new Node(root_, node);
+    root_->setMiddleKey(i);
+  }
 }
 
-Node* Tree::insert(Node *current_node, double value)
+Node* Tree::insert(Node *current_node, double value, double* low)
 {
   int child = 0;
   Node *w;
 
-  // Если текущий узел - лист
-  if (current_node->is_leaf()) 
-    if (value > current_node->getLeafValue())
-    { 
+  // Если лист
+  if (current_node->is_leaf())
+  {
+    if (current_node->getLeafValue() != value)
+      if (current_node->getLeafValue() < value)
+      {
+      *low = value;
       return new Node(value);
-    }
-    else if (value < current_node->getLeafValue())
-    {
-      return new Node(current_node->setLeafValue(value));
-    }
-    else
-      return NULL;
+      }
+      else {
+        Node *pnew = new Node(current_node->getLeafValue());
+        current_node->setLeafValue(value);
+        *low = current_node->getLeafValue();
 
-    
-    // Если внутренний узел
+        return pnew;
+      }
+
+      return NULL;
+  }
+  
+    // Если узел
     if (value < current_node->getMiddleKey())
     { 
+      cout << "child: 1\n";
       child = 1;
       w = current_node->getLeftChild();
     }
     else if (!current_node->getRightChild() || value < current_node->getMiddleKey()) // х во втором поддереве
     {
+      cout << "child: 2\n";
       child = 2;
       w = current_node->getMiddleChild();
     }
     else { // х в третьем поддереве 
+      cout << "child: 3\n";
       child = 3;
       w = current_node->getRightChild();
     }
 
-    
-    Node *node = insert(w, value);
+    double lowback = 0;
+    Node *pback = insert(w, value, &lowback);
 
-    if (node != NULL)
+
+
+    if (pback != NULL)
       // node имеет двух сыновей
       if (current_node->getRightChild() == NULL) 
-        if (child - 2)
+
+
+        if (child == 2)
         {
-          current_node->setRightChild(node);
+          cout << "== 2\n";
+          current_node->setRightChild(pback);
+          current_node->setRightKey(lowback);
         }
         else { // child = 1 
+          cout << "== 1\n";
           current_node->setRightChild(current_node->getMiddleChild());
-          current_node->setMiddleChild(node);
+          current_node->setRightKey(current_node->getMiddleKey());
+          current_node->setMiddleChild(pback);
+          current_node->setMiddleKey(lowback);
         }
+
+
+
       // node имеет трех сыновей
       else {
+        Node *pnew = new Node();
 
         if (child == 3) // pback и 3 - й сын становятся сыновьями нового узла
         {
-          new Node(current_node->getRightChild(), node);
-          //low: = current_node.lowofthird;
+          cout << "== 3\n";
+
+          pnew->setLeftChild(current_node->getRightChild());
+          pnew->setMiddleChild(pback);
+          pnew->setMiddleKey(lowback);
+
+          *low = current_node->getRightKey();
           current_node->setRightChild(NULL);
         }
-        else { // child < 2; перемещение 3 - го сына node к pnew
-          new Node(current_node->getRightChild(), node);
-          //pnewt.secondchild: = current_node.thirdchild;
-          //pnew\.lowofsecond: = current_node.lowofthird;
-          //pnewt.thirdchild: = nil;
+        else {
+          pnew->setMiddleChild(current_node->getRightChild());
+          pnew->setMiddleKey(current_node->getRightKey());
           current_node->setRightChild(NULL);
         }
 
-        if (child == 2) //pback становится 1 - м сыном pnew
+        if (child == 2)
         {
-          //pnewf.firstchild: = pback;
-          //low: = lowback
+          pnew->setLeftChild(pback);
+          *low = lowback;
         }
 
-        if (child == 1) // 2 - й сын node перемещается к pnew, pback становится 2 - м сыном node
+        if (child == 1) 
         {
-          //pnewt.firstchild: = current_node.secondchild;
-          //low: = nodet - lowofsecond;
-          //current_node.secondcnild: = pback;
-          //current_node.lowofsecond: = lowback
+          pnew->setLeftChild(current_node->getMiddleChild());
+          *low = current_node->getMiddleKey();
+
+          current_node->setMiddleChild(pback);
+          current_node->setMiddleKey(lowback);
         }
+
+        return pnew;
      }
-      return NULL;
+
+
+     return NULL;
 }
 
 void Tree::print(Node *tree, int lv)
@@ -127,18 +163,20 @@ void Tree::print(Node *tree, int lv)
     if (!tree)
       return;
 
-    print(tree->getLeftChild(), lv + 1);
-
-    for (i = 0; i < lv; i++)
-      printf("          ");
-
     if (tree->is_leaf())
-      printf("%.0f\n", tree->getLeafValue());
-    else
-      printf("(%.0f, %.0f)\n", tree->getMiddleKey(), tree->getRightKey());
+      printf("%.0f ", tree->getLeafValue());
+    else {
+      if (lv) 
+        printf("\n");
 
+      for (i = 0; i < lv; i++)
+        printf("    ");
+
+      printf("[%.0f, %.0f]: ", tree->getMiddleKey(), tree->getRightKey());
+    }
+
+    print(tree->getLeftChild(), lv + 1);
     print(tree->getMiddleChild(), lv + 1);
-
     print(tree->getRightChild(), lv + 1);
 }
 

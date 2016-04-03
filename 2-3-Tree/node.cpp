@@ -1,5 +1,12 @@
 #include "node.h"
 
+Node::Node()
+{
+  left_child_ = NULL;
+  middle_child_ = NULL;
+  right_child_ = NULL;
+}
+
 Node::Node(double value)
 {
   left_child_ = NULL;
@@ -15,7 +22,8 @@ Node::Node(Node *left_child, Node *middle_child)
   middle_child_ = middle_child;
   right_child_ = NULL;
 
-  middle_key_ = middle_child->getMiddleKey();
+  //if (middle_child->is_leaf())
+    //middle_key_ = middle_child->getLeafValue();
 }
 
 bool Node::is_node() const 

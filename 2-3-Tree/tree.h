@@ -9,13 +9,13 @@ class Tree
 private:
   Node *root_;
 
-  void  print(Node *tree, int lv);
-  Node* insert(Node *current_node, double value);
+  void  print(Node*, int);
+  Node* insert(Node*, double, double*);
 public:
   Tree();
 
-  void insertValue(double value);
-  Node searchNode(double value);
+  void insertValue(double);
+  Node searchNode(double);
 
   void printTree();
 };
